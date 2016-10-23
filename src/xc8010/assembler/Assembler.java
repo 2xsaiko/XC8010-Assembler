@@ -30,7 +30,7 @@ public class Assembler {
 	public static int startingAddr;
 	private static File infile;
 	private static File outfile;
-	
+
 	public static void main(String[] args) throws IOException {
 		setargs(args);
 		readFile();
@@ -40,7 +40,7 @@ public class Assembler {
 		ByteBuffer buf = assemble();
 		save(buf);
 	}
-	
+
 	private static void setargs(String[] args) {
 		if (args.length < 2) {
 			System.out.println("Syntax: <input> <output> [starting-address]");
@@ -174,6 +174,10 @@ public class Assembler {
 				buf.put(data);
 				cptr += data.length;
 			}
+		}
+		while (cptr % 0x80 != 0) {
+			buf.put((byte) 0);
+			cptr++;
 		}
 		return buf;
 	}
