@@ -28,22 +28,35 @@ public class Assembler {
 	private static HashMap<String, Integer> dlabels = new HashMap<>();
 
 	public static int startingAddr;
+	private static File infile;
 	private static File outfile;
-
+	
 	public static void main(String[] args) throws IOException {
-		File f = new File("bootldr.asm");
-		outfile = new File("bootldr.bin");
-		startingAddr = 0x0400;
-		readFile(f);
+		setargs(args);
+		readFile();
 		sections();
 		dummyLabels();
 		labels();
 		ByteBuffer buf = assemble();
 		save(buf);
 	}
+	
+	private static void setargs(String[] args) {
+		if (args.length < 2) {
+			System.out.println("Syntax: <input> <output> [starting-address]");
+			System.out.println("                         [ Default: $0400 ]");
+			exit(1);
+		}
+		infile = new File(args[0]);
+		outfile = new File(args[1]);
+		startingAddr = 0x0400;
+		if (args.length > 2) {
+			startingAddr = parseInt(args[2]);
+		}
+	}
 
-	private static void readFile(File f) throws IOException {
-		BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+	private static void readFile() throws IOException {
+		BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(infile)));
 		String line;
 		while ((line = r.readLine()) != null) {
 			int i = line.indexOf(COMMENT_BEGIN);
@@ -194,6 +207,10 @@ public class Assembler {
 		if (s.startsWith("$")) {
 			cut = s.substring(1);
 		} else {
+			System.err.printf("Could not parse integer '%s'", s);
+			exit(1);
+		}
+		if (cut.length() != 2 || cut.length() == 4) {
 			System.err.printf("Could not parse integer '%s'", s);
 			exit(1);
 		}
