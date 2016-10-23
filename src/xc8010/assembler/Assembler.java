@@ -210,7 +210,7 @@ public class Assembler {
 			System.err.printf("Could not parse integer '%s'", s);
 			exit(1);
 		}
-		if (cut.length() != 2 || cut.length() == 4) {
+		if (cut.length() != 2 && cut.length() != 4) {
 			System.err.printf("Could not parse integer '%s'", s);
 			exit(1);
 		}
