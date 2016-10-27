@@ -7,147 +7,9 @@ import static java.lang.System.exit;
 
 public class Instruction {
 
-	private static final HashMap<String, HashMap<AddressingMode, Integer>> opcodeMap;
-	private static final HashMap<AddressingMode, ISerializer> serializers;
-	public static final ArrayList<String> relativeMap;
-
-	public final String id;
-	public final String[] arguments;
-
-	public static Instruction fromString(String insnLine, int cptr, HashMap<String, Integer> labels) {
-		ArrayList<String> labelsSorted = new ArrayList<>();
-		if (labels != null) {
-			labelsSorted.addAll(labels.keySet());
-			labelsSorted.sort((o1, o2) -> o2.compareTo(o1));
-		}
-		String t = insnLine.trim();
-		String id;
-		String[] arguments;
-
-		// strip out labels
-		int end = t.indexOf(':');
-		t = t.substring(end + 1).trim();
-
-		end = t.indexOf(' ');
-		if (end == -1) {
-			id = t;
-			arguments = new String[0];
-		} else {
-			ArrayList<String> args = new ArrayList<>();
-			id = t.substring(0, end);
-			t = t.substring(end + 1).trim();
-			while ((end = t.indexOf(',')) != -1) {
-				args.add(t.substring(0, end).trim());
-				t = t.substring(end + 1).trim();
-			}
-			args.add(t.trim());
-			arguments = new String[args.size()];
-			args.toArray(arguments);
-			if (!labelsSorted.isEmpty())
-				for (int i = 0; i < arguments.length; i++) {
-					String arg = arguments[i];
-					int ind = Integer.MAX_VALUE;
-					int len = 0;
-					int ct = 0;
-					for (String string : labelsSorted) {
-						int j;
-						if ((j = arg.indexOf(string)) < ind && j != -1) {
-							ind = j;
-							len = string.length();
-							ct = labels.get(string);
-						}
-					}
-					if (ind != Integer.MAX_VALUE) {
-						// if (relativeMap.contains(id)) {
-						// arg = arg.substring(0, ind) + Assembler.toString((ct
-						// - cptr) & 0xFF, false)
-						// + arg.substring(ind + len);
-						// } else {
-						arg = arg.substring(0, ind) + Assembler.toString(ct, true) + arg.substring(ind + len);
-						// }
-						arguments[i] = arg;
-					}
-				}
-		}
-		return new Instruction(id.toLowerCase(), arguments);
-
-	}
-
-	public static Instruction fromString(String insnLine) {
-		return fromString(insnLine, 0, null);
-	}
-
-	public byte[] getData(int cptr) {
-		ArrayList<Byte> data = new ArrayList<>(4);
-		if (i("db")) {
-			for (String arg : arguments) {
-				if (arg.startsWith("'") && arg.endsWith("'")) {
-					byte[] bytes = Assembler.stringBytes(arg.substring(1, arg.length() - 1));
-					for (byte b : bytes) {
-						data.add(b);
-					}
-				} else {
-					int i = Assembler.parseInt(arg) & 0xFF;
-					data.add((byte) i);
-				}
-			}
-		} else {
-			AddressingMode am = AddressingMode.getAddressingMode(this);
-			int opcode = getOpcode(id, am);
-			data.add((byte) opcode);
-			ISerializer s = serializers.get(am);
-			if (s == null) {
-				System.err.printf("Unimplemented addressing mode %s", am);
-				exit(1);
-			}
-			s.accept(this, cptr, data);
-		}
-		return toBytes(data);
-	}
-
-	private boolean i(String expected) {
-		return expected.equals(id);
-	}
-
-	private Instruction(String id, String[] arguments) {
-		this.id = id;
-		this.arguments = arguments;
-	}
-
-	private static byte[] toBytes(ArrayList<Byte> data) {
-		byte[] dres = new byte[data.size()];
-		int i = 0;
-		for (byte b : data) {
-			dres[i++] = b;
-		}
-		return dres;
-	}
-
-	private static void registerOpcode(String insnId, AddressingMode am, int dat) {
-		HashMap<AddressingMode, Integer> lvl2 = opcodeMap.get(insnId);
-		if (lvl2 == null) {
-			lvl2 = new HashMap<>();
-			opcodeMap.put(insnId, lvl2);
-		}
-		if (lvl2.containsKey(am)) {
-			System.out.printf("Duplicate addressing mode %s for instruction %s%n", am, insnId);
-			exit(1);
-		}
-		lvl2.put(am, dat);
-	}
-
-	private static int getOpcode(String insnId, AddressingMode am) {
-		HashMap<AddressingMode, Integer> lvl2 = opcodeMap.get(insnId);
-		if (lvl2 == null) {
-			System.out.printf("Invalid opcode %s (addressing mode %s)", insnId, am);
-			exit(1);
-		}
-		if (!lvl2.containsKey(am)) {
-			System.out.printf("Invalid addressing mode %s for instruction %s%n", am, insnId);
-			exit(1);
-		}
-		return lvl2.get(am);
-	}
+    public static final ArrayList<String> relativeMap;
+    private static final HashMap<String, HashMap<AddressingMode, Integer>> opcodeMap;
+    private static final HashMap<AddressingMode, ISerializer> serializers;
 
 	static {
 		relativeMap = new ArrayList<>();
@@ -164,8 +26,9 @@ public class Instruction {
 		opcodeMap = new HashMap<>();
 		registerOpcode("brk", AddressingMode.IMPLIED, 0x00);
 		registerOpcode("php", AddressingMode.IMPLIED, 0x08);
-		registerOpcode("inc", AddressingMode.ACCUMULATOR, 0x1A);
-		registerOpcode("jsr", AddressingMode.ABSOLUTE, 0x20);
+        registerOpcode("clc", AddressingMode.IMPLIED, 0x18);
+        registerOpcode("inc", AddressingMode.ACCUMULATOR, 0x1A);
+        registerOpcode("jsr", AddressingMode.ABSOLUTE, 0x20);
 		registerOpcode("plp", AddressingMode.IMPLIED, 0x28);
 		registerOpcode("pha", AddressingMode.IMPLIED, 0x48);
 		registerOpcode("jmp", AddressingMode.ABSOLUTE, 0x4C);
@@ -180,8 +43,9 @@ public class Instruction {
 		registerOpcode("sty", AddressingMode.ZERO_PAGE, 0x84);
 		registerOpcode("sta", AddressingMode.ZERO_PAGE, 0x85);
 		registerOpcode("dey", AddressingMode.IMPLIED, 0x88);
-		registerOpcode("sty", AddressingMode.ABSOLUTE, 0x8C);
-		registerOpcode("sta", AddressingMode.ABSOLUTE, 0x8D);
+        registerOpcode("txr", AddressingMode.IMPLIED, 0x8B);
+        registerOpcode("sty", AddressingMode.ABSOLUTE, 0x8C);
+        registerOpcode("sta", AddressingMode.ABSOLUTE, 0x8D);
 		registerOpcode("sta", AddressingMode.INDIRECT_INDEXED, 0x91);
 		registerOpcode("sta", AddressingMode.INDIRECT_ABSOLUTE, 0x92);
 		registerOpcode("sty", AddressingMode.ZERO_PAGE_INDEXED_X, 0x94);
@@ -264,6 +128,138 @@ public class Instruction {
 		});
 		serializers.put(AddressingMode.ACCUMULATOR, (insn, cptr, list) -> {
 		});
-	}
+    }
+
+    public final String id;
+    public final String[] arguments;
+
+    private Instruction(String id, String[] arguments) {
+        this.id = id;
+        this.arguments = arguments;
+    }
+
+    public static Instruction fromString(String insnLine, int cptr, HashMap<String, Integer> labels) {
+        ArrayList<String> labelsSorted = new ArrayList<>();
+        if (labels != null) {
+            labelsSorted.addAll(labels.keySet());
+            labelsSorted.sort((o1, o2) -> o2.compareTo(o1));
+        }
+        String t = insnLine.trim();
+        String id;
+        String[] arguments;
+
+        // strip out labels
+        int end = t.indexOf(':');
+        t = t.substring(end + 1).trim();
+
+        end = t.indexOf(' ');
+        if (end == -1) {
+            id = t;
+            arguments = new String[0];
+        } else {
+            ArrayList<String> args = new ArrayList<>();
+            id = t.substring(0, end);
+            t = t.substring(end + 1).trim();
+            while ((end = t.indexOf(',')) != -1) {
+                args.add(t.substring(0, end).trim());
+                t = t.substring(end + 1).trim();
+            }
+            args.add(t.trim());
+            arguments = new String[args.size()];
+            args.toArray(arguments);
+            if (!labelsSorted.isEmpty())
+                for (int i = 0; i < arguments.length; i++) {
+                    String arg = arguments[i];
+                    int ind = Integer.MAX_VALUE;
+                    int len = 0;
+                    int ct = 0;
+                    for (String string : labelsSorted) {
+                        int j;
+                        if ((j = arg.indexOf(string)) < ind && j != -1) {
+                            ind = j;
+                            len = string.length();
+                            ct = labels.get(string);
+                        }
+                    }
+                    if (ind != Integer.MAX_VALUE) {
+                        arg = arg.substring(0, ind) + Assembler.toString(ct, true) + arg.substring(ind + len);
+                        arguments[i] = arg;
+                    }
+                }
+        }
+        return new Instruction(id.toLowerCase(), arguments);
+
+    }
+
+    public static Instruction fromString(String insnLine) {
+        return fromString(insnLine, 0, null);
+    }
+
+    private static byte[] toBytes(ArrayList<Byte> data) {
+        byte[] dres = new byte[data.size()];
+        int i = 0;
+        for (byte b : data) {
+            dres[i++] = b;
+        }
+        return dres;
+    }
+
+    private static void registerOpcode(String insnId, AddressingMode am, int dat) {
+        HashMap<AddressingMode, Integer> lvl2 = opcodeMap.get(insnId);
+        if (lvl2 == null) {
+            lvl2 = new HashMap<>();
+            opcodeMap.put(insnId, lvl2);
+        }
+        if (lvl2.containsKey(am)) {
+            System.out.printf("Duplicate addressing mode %s for instruction %s%n", am, insnId);
+            exit(1);
+        }
+        lvl2.put(am, dat);
+    }
+
+    private static int getOpcode(String insnId, AddressingMode am) {
+        HashMap<AddressingMode, Integer> lvl2 = opcodeMap.get(insnId);
+        if (lvl2 == null) {
+            System.out.printf("Invalid opcode %s (addressing mode %s)", insnId, am);
+            exit(1);
+        }
+        if (!lvl2.containsKey(am)) {
+            System.out.printf("Invalid addressing mode %s for instruction %s%n", am, insnId);
+            exit(1);
+        }
+        return lvl2.get(am);
+    }
+
+    public byte[] getData(int cptr) {
+        ArrayList<Byte> data = new ArrayList<>(4);
+        if (i("db")) {
+            for (String arg : arguments) {
+                if (arg.startsWith("'") && arg.endsWith("'")) {
+                    byte[] bytes = Assembler.stringBytes(arg.substring(1, arg.length() - 1));
+                    for (byte b : bytes) {
+                        data.add(b);
+                    }
+                } else {
+                    int i = Assembler.parseInt(arg) & 0xFF;
+                    data.add((byte) i);
+                }
+            }
+        } else {
+            AddressingMode am = AddressingMode.getAddressingMode(this);
+            int opcode = getOpcode(id, am);
+            data.add((byte) opcode);
+            ISerializer s = serializers.get(am);
+            if (s == null) {
+                System.err.printf("Unimplemented addressing mode %s", am);
+                exit(1);
+            }
+            s.accept(this, cptr, data);
+        }
+        return toBytes(data);
+    }
+
+    private boolean i(String expected) {
+        return expected.equals(id);
+    }
 
 }
