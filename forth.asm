@@ -1,1 +1,0 @@
-../xc8010/src/main/resources/assets/xc8010/forth.asm
