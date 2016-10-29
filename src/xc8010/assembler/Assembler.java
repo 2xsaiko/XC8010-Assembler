@@ -19,6 +19,7 @@ public class Assembler {
     private static HashMap<String, Integer> dlabels = new HashMap<>();
     private static HashMap<String, Integer> vars = new HashMap<>();
     private static HashMap<String, Macro> macros = new HashMap<>();
+    private static HashMap<String, ICodeOp> funcs;
     private static File infile;
     private static File outfile;
 
@@ -94,6 +95,7 @@ public class Assembler {
                     macros.put(mn, macro);
                     defm = true;
                 }
+                continue;
             }
             if (defm) {
                 if (s.equals(".endm")) {
@@ -160,7 +162,7 @@ public class Assembler {
     }
 
     private static void labels() {
-        Pattern p = Pattern.compile("^[^0-9,\\(\\);:.$]+$");
+        Pattern p = Pattern.compile("^[^0-9,();:.+\\-\\^$]+$");
         int cptr = startingAddr;
         for (Section s : sections) {
             for (Iterator<Map.Entry<Integer, String>> iterator = s.iterator(); iterator.hasNext(); ) {

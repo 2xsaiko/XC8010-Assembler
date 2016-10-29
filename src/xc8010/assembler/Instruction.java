@@ -240,7 +240,12 @@ public class Instruction {
                         data.add(b);
                     }
                 } else {
-                    int i = Assembler.parseInt(arg) & 0xFF;
+                    int i = Assembler.parseInt(arg);
+                    if (arg.startsWith("^")) {
+                        i = i >> 8;
+                    } else {
+                        i &= 0xFF;
+                    }
                     data.add((byte) i);
                 }
             }

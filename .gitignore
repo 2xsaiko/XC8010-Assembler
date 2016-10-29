@@ -16,3 +16,4 @@ hs_err_pid*
 /forth.asm
 /.idea/
 /assembler.sh
+/xc8010-assembler.iml
