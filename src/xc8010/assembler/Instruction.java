@@ -11,123 +11,126 @@ public class Instruction {
     private static final HashMap<String, HashMap<AddressingMode, Integer>> opcodeMap;
     private static final HashMap<AddressingMode, ISerializer> serializers;
 
-	static {
-		relativeMap = new ArrayList<>();
-		relativeMap.add("bcc");
-		relativeMap.add("bcs");
-		relativeMap.add("beq");
-		relativeMap.add("bmi");
-		relativeMap.add("bne");
-		relativeMap.add("bpl");
-		relativeMap.add("bvc");
-		relativeMap.add("bvs");
-		relativeMap.add("bra");
+    static {
+        relativeMap = new ArrayList<>();
+        relativeMap.add("bcc");
+        relativeMap.add("bcs");
+        relativeMap.add("beq");
+        relativeMap.add("bmi");
+        relativeMap.add("bne");
+        relativeMap.add("bpl");
+        relativeMap.add("bvc");
+        relativeMap.add("bvs");
+        relativeMap.add("bra");
 
-		opcodeMap = new HashMap<>();
-		registerOpcode("brk", AddressingMode.IMPLIED, 0x00);
-		registerOpcode("php", AddressingMode.IMPLIED, 0x08);
+        opcodeMap = new HashMap<>();
+        registerOpcode("brk", AddressingMode.IMPLIED, 0x00);
+        registerOpcode("nxt", AddressingMode.IMPLIED, 0x02);
+        registerOpcode("php", AddressingMode.IMPLIED, 0x08);
         registerOpcode("clc", AddressingMode.IMPLIED, 0x18);
         registerOpcode("inc", AddressingMode.ACCUMULATOR, 0x1A);
         registerOpcode("jsr", AddressingMode.ABSOLUTE, 0x20);
-		registerOpcode("plp", AddressingMode.IMPLIED, 0x28);
-		registerOpcode("pha", AddressingMode.IMPLIED, 0x48);
-		registerOpcode("jmp", AddressingMode.ABSOLUTE, 0x4C);
-		registerOpcode("phy", AddressingMode.IMPLIED, 0x5A);
-		registerOpcode("rts", AddressingMode.IMPLIED, 0x60);
-		registerOpcode("stz", AddressingMode.ZERO_PAGE, 0x64);
-		registerOpcode("pla", AddressingMode.IMPLIED, 0x68);
-		registerOpcode("adc", AddressingMode.IMMEDIATE, 0x69);
-		registerOpcode("stz", AddressingMode.ZERO_PAGE_INDEXED_X, 0x74);
-		registerOpcode("ply", AddressingMode.IMPLIED, 0x7A);
-		registerOpcode("bra", AddressingMode.RELATIVE, 0x80);
-		registerOpcode("sty", AddressingMode.ZERO_PAGE, 0x84);
-		registerOpcode("sta", AddressingMode.ZERO_PAGE, 0x85);
-		registerOpcode("dey", AddressingMode.IMPLIED, 0x88);
+        registerOpcode("plp", AddressingMode.IMPLIED, 0x28);
+        registerOpcode("nxa", AddressingMode.IMPLIED, 0x42);
+        registerOpcode("pha", AddressingMode.IMPLIED, 0x48);
+        registerOpcode("rha", AddressingMode.IMPLIED, 0x4B);
+        registerOpcode("jmp", AddressingMode.ABSOLUTE, 0x4C);
+        registerOpcode("phy", AddressingMode.IMPLIED, 0x5A);
+        registerOpcode("rts", AddressingMode.IMPLIED, 0x60);
+        registerOpcode("stz", AddressingMode.ZERO_PAGE, 0x64);
+        registerOpcode("pla", AddressingMode.IMPLIED, 0x68);
+        registerOpcode("adc", AddressingMode.IMMEDIATE, 0x69);
+        registerOpcode("stz", AddressingMode.ZERO_PAGE_INDEXED_X, 0x74);
+        registerOpcode("ply", AddressingMode.IMPLIED, 0x7A);
+        registerOpcode("bra", AddressingMode.RELATIVE, 0x80);
+        registerOpcode("sty", AddressingMode.ZERO_PAGE, 0x84);
+        registerOpcode("sta", AddressingMode.ZERO_PAGE, 0x85);
+        registerOpcode("dey", AddressingMode.IMPLIED, 0x88);
         registerOpcode("txr", AddressingMode.IMPLIED, 0x8B);
         registerOpcode("sty", AddressingMode.ABSOLUTE, 0x8C);
         registerOpcode("sta", AddressingMode.ABSOLUTE, 0x8D);
-		registerOpcode("sta", AddressingMode.INDIRECT_INDEXED, 0x91);
-		registerOpcode("sta", AddressingMode.INDIRECT_ABSOLUTE, 0x92);
-		registerOpcode("sty", AddressingMode.ZERO_PAGE_INDEXED_X, 0x94);
-		registerOpcode("sta", AddressingMode.ZERO_PAGE_INDEXED_X, 0x95);
-		registerOpcode("sta", AddressingMode.ABSOLUTE_INDEXED_Y, 0x99);
-		registerOpcode("txs", AddressingMode.IMPLIED, 0x9A);
-		registerOpcode("stz", AddressingMode.ABSOLUTE, 0x9C);
-		registerOpcode("ldy", AddressingMode.IMMEDIATE, 0xA0);
-		registerOpcode("ldy", AddressingMode.IMMEDIATEB, 0xA0);
-		registerOpcode("ldx", AddressingMode.IMMEDIATE, 0xA2);
-		registerOpcode("ldx", AddressingMode.IMMEDIATEB, 0xA2);
-		registerOpcode("lda", AddressingMode.ZERO_PAGE, 0xA5);
-		registerOpcode("lda", AddressingMode.IMMEDIATE, 0xA9);
-		registerOpcode("lda", AddressingMode.IMMEDIATEB, 0xA9);
-		registerOpcode("lda", AddressingMode.ABSOLUTE, 0xAD);
-		registerOpcode("lda", AddressingMode.INDIRECT_INDEXED, 0xB1);
-		registerOpcode("lda", AddressingMode.ABSOLUTE_INDEXED_Y, 0xB9);
-		registerOpcode("ldx", AddressingMode.ABSOLUTE_INDEXED_Y, 0xBE);
-		registerOpcode("cpy", AddressingMode.IMMEDIATE, 0xC0);
-		registerOpcode("cpy", AddressingMode.IMMEDIATEB, 0xC0);
-		registerOpcode("rep", AddressingMode.IMMEDIATEB, 0xC2);
-		registerOpcode("iny", AddressingMode.IMPLIED, 0xC8);
-		registerOpcode("cmp", AddressingMode.IMMEDIATE, 0xC9);
-		registerOpcode("cmp", AddressingMode.IMMEDIATEB, 0xC9);
-		registerOpcode("dex", AddressingMode.IMPLIED, 0xCA);
-		registerOpcode("wai", AddressingMode.IMPLIED, 0xCB);
-		registerOpcode("bne", AddressingMode.RELATIVE, 0xD0);
-		registerOpcode("stp", AddressingMode.IMPLIED, 0xDB);
-		registerOpcode("sep", AddressingMode.IMMEDIATEB, 0xE2);
-		registerOpcode("inc", AddressingMode.ZERO_PAGE, 0xE6);
-		registerOpcode("inc", AddressingMode.ABSOLUTE, 0xEE);
-		registerOpcode("mmu", AddressingMode.ZERO_PAGE, 0xEF);
-		registerOpcode("beq", AddressingMode.RELATIVE, 0xF0);
-		registerOpcode("xce", AddressingMode.IMPLIED, 0xFB);
+        registerOpcode("sta", AddressingMode.INDIRECT_INDEXED, 0x91);
+        registerOpcode("sta", AddressingMode.INDIRECT_ABSOLUTE, 0x92);
+        registerOpcode("sty", AddressingMode.ZERO_PAGE_INDEXED_X, 0x94);
+        registerOpcode("sta", AddressingMode.ZERO_PAGE_INDEXED_X, 0x95);
+        registerOpcode("sta", AddressingMode.ABSOLUTE_INDEXED_Y, 0x99);
+        registerOpcode("txs", AddressingMode.IMPLIED, 0x9A);
+        registerOpcode("stz", AddressingMode.ABSOLUTE, 0x9C);
+        registerOpcode("ldy", AddressingMode.IMMEDIATE, 0xA0);
+        registerOpcode("ldy", AddressingMode.IMMEDIATEB, 0xA0);
+        registerOpcode("ldx", AddressingMode.IMMEDIATE, 0xA2);
+        registerOpcode("ldx", AddressingMode.IMMEDIATEB, 0xA2);
+        registerOpcode("lda", AddressingMode.ZERO_PAGE, 0xA5);
+        registerOpcode("lda", AddressingMode.IMMEDIATE, 0xA9);
+        registerOpcode("lda", AddressingMode.IMMEDIATEB, 0xA9);
+        registerOpcode("lda", AddressingMode.ABSOLUTE, 0xAD);
+        registerOpcode("lda", AddressingMode.INDIRECT_INDEXED, 0xB1);
+        registerOpcode("lda", AddressingMode.ABSOLUTE_INDEXED_Y, 0xB9);
+        registerOpcode("ldx", AddressingMode.ABSOLUTE_INDEXED_Y, 0xBE);
+        registerOpcode("cpy", AddressingMode.IMMEDIATE, 0xC0);
+        registerOpcode("cpy", AddressingMode.IMMEDIATEB, 0xC0);
+        registerOpcode("rep", AddressingMode.IMMEDIATEB, 0xC2);
+        registerOpcode("iny", AddressingMode.IMPLIED, 0xC8);
+        registerOpcode("cmp", AddressingMode.IMMEDIATE, 0xC9);
+        registerOpcode("cmp", AddressingMode.IMMEDIATEB, 0xC9);
+        registerOpcode("dex", AddressingMode.IMPLIED, 0xCA);
+        registerOpcode("wai", AddressingMode.IMPLIED, 0xCB);
+        registerOpcode("bne", AddressingMode.RELATIVE, 0xD0);
+        registerOpcode("stp", AddressingMode.IMPLIED, 0xDB);
+        registerOpcode("sep", AddressingMode.IMMEDIATEB, 0xE2);
+        registerOpcode("inc", AddressingMode.ZERO_PAGE, 0xE6);
+        registerOpcode("inc", AddressingMode.ABSOLUTE, 0xEE);
+        registerOpcode("mmu", AddressingMode.ZERO_PAGE, 0xEF);
+        registerOpcode("beq", AddressingMode.RELATIVE, 0xF0);
+        registerOpcode("xce", AddressingMode.IMPLIED, 0xFB);
 
-		serializers = new HashMap<>();
-		serializers.put(AddressingMode.IMMEDIATE, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0].substring(1));
-			list.add((byte) (val & 0xFF));
-			list.add((byte) (val >> 8));
-		});
-		serializers.put(AddressingMode.IMMEDIATEB, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0].substring(1));
-			list.add((byte) (val & 0xFF));
-		});
-		serializers.put(AddressingMode.ZERO_PAGE, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0]);
-			list.add((byte) (val & 0xFF));
-		});
-		serializers.put(AddressingMode.ZERO_PAGE_INDEXED_X, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0]);
-			list.add((byte) (val & 0xFF));
-		});
-		serializers.put(AddressingMode.ABSOLUTE, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0]);
-			list.add((byte) (val & 0xFF));
-			list.add((byte) (val >> 8));
-		});
-		serializers.put(AddressingMode.INDIRECT_ABSOLUTE, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
-			list.add((byte) (val & 0xFF));
-			list.add((byte) (val >> 8));
-		});
-		serializers.put(AddressingMode.ABSOLUTE_INDEXED_Y, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0]);
-			list.add((byte) (val & 0xFF));
-			list.add((byte) (val >> 8));
-		});
-		serializers.put(AddressingMode.RELATIVE, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0]);
-			val -= cptr + list.size() + 1;
-			list.add((byte) val);
-		});
-		serializers.put(AddressingMode.INDIRECT_INDEXED, (insn, cptr, list) -> {
-			int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
-			list.add((byte) (val & 0xFF));
-			list.add((byte) (val >> 8));
-		});
-		serializers.put(AddressingMode.IMPLIED, (insn, cptr, list) -> {
-		});
-		serializers.put(AddressingMode.ACCUMULATOR, (insn, cptr, list) -> {
-		});
+        serializers = new HashMap<>();
+        serializers.put(AddressingMode.IMMEDIATE, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0].substring(1));
+            list.add((byte) (val & 0xFF));
+            list.add((byte) (val >> 8));
+        });
+        serializers.put(AddressingMode.IMMEDIATEB, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0].substring(1));
+            list.add((byte) (val & 0xFF));
+        });
+        serializers.put(AddressingMode.ZERO_PAGE, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0]);
+            list.add((byte) (val & 0xFF));
+        });
+        serializers.put(AddressingMode.ZERO_PAGE_INDEXED_X, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0]);
+            list.add((byte) (val & 0xFF));
+        });
+        serializers.put(AddressingMode.ABSOLUTE, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0]);
+            list.add((byte) (val & 0xFF));
+            list.add((byte) (val >> 8));
+        });
+        serializers.put(AddressingMode.INDIRECT_ABSOLUTE, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
+            list.add((byte) (val & 0xFF));
+            list.add((byte) (val >> 8));
+        });
+        serializers.put(AddressingMode.ABSOLUTE_INDEXED_Y, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0]);
+            list.add((byte) (val & 0xFF));
+            list.add((byte) (val >> 8));
+        });
+        serializers.put(AddressingMode.RELATIVE, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0]);
+            val -= cptr + list.size() + 1;
+            list.add((byte) val);
+        });
+        serializers.put(AddressingMode.INDIRECT_INDEXED, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
+            list.add((byte) (val & 0xFF));
+            list.add((byte) (val >> 8));
+        });
+        serializers.put(AddressingMode.IMPLIED, (insn, cptr, list) -> {
+        });
+        serializers.put(AddressingMode.ACCUMULATOR, (insn, cptr, list) -> {
+        });
     }
 
     public final String id;
@@ -139,11 +142,16 @@ public class Instruction {
     }
 
     public static Instruction fromString(String insnLine, int cptr, HashMap<String, Integer> labels) {
-        ArrayList<String> labelsSorted = new ArrayList<>();
-        if (labels != null) {
-            labelsSorted.addAll(labels.keySet());
-            labelsSorted.sort((o1, o2) -> o2.compareTo(o1));
+        ArrayList<String> sortedVarList = new ArrayList<>();
+        HashMap<String, Integer> allVars = new HashMap<>();
+        if (Assembler.vars != null) {
+            allVars.putAll(Assembler.vars);
         }
+        if (labels != null) {
+            allVars.putAll(labels);
+        }
+        sortedVarList.addAll(allVars.keySet());
+        sortedVarList.sort((o1, o2) -> o2.compareTo(o1));
         String t = insnLine.trim();
         String id;
         String[] arguments;
@@ -167,18 +175,24 @@ public class Instruction {
             args.add(t.trim());
             arguments = new String[args.size()];
             args.toArray(arguments);
-            if (!labelsSorted.isEmpty())
+            if (!sortedVarList.isEmpty())
                 for (int i = 0; i < arguments.length; i++) {
+                    if (i == 0 && ".set".equals(id)) continue;
+                    Macro macro = Assembler.macros.get(id);
+                    if (macro != null) {
+                        if (macro.noReplace[i])
+                            continue;
+                    }
                     String arg = arguments[i];
                     int ind = Integer.MAX_VALUE;
                     int len = 0;
                     int ct = 0;
-                    for (String string : labelsSorted) {
+                    for (String string : sortedVarList) {
                         int j;
                         if ((j = arg.indexOf(string)) < ind && j != -1) {
                             ind = j;
                             len = string.length();
-                            ct = labels.get(string);
+                            ct = allVars.get(string);
                         }
                     }
                     if (ind != Integer.MAX_VALUE) {
@@ -240,15 +254,18 @@ public class Instruction {
                         data.add(b);
                     }
                 } else {
-                    int i = Assembler.parseInt(arg);
+                    int i;
                     if (arg.startsWith("^")) {
-                        i = i >> 8;
+                        i = Assembler.parseInt(arg.substring(1)) >> 8;
                     } else {
-                        i &= 0xFF;
+                        i = Assembler.parseInt(arg) & 0xFF;
                     }
                     data.add((byte) i);
                 }
             }
+        } else if (i(".set")) {
+            Assembler.vars.put(arguments[0], Assembler.parseInt(arguments[1]));
+            return new byte[0];
         } else {
             AddressingMode am = AddressingMode.getAddressingMode(this);
             int opcode = getOpcode(id, am);

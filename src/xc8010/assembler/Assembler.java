@@ -8,18 +8,23 @@ import java.util.regex.Pattern;
 
 import static java.lang.System.exit;
 
+/**
+ * THIS LOOKS LIKE DEATH
+ * SPAGHETTI CODE EVERYWHERE
+ * KILL IT BEFORE IT LAYS EGGS
+ */
+
 public class Assembler {
 
     public static final char COMMENT_BEGIN = ';';
     public static final char LABEL_MARK = ':';
     public static int startingAddr;
+    public static HashMap<String, Integer> vars = new HashMap<>();
+    public static HashMap<String, Macro> macros = new HashMap<>();
     private static ArrayList<String> lines = new ArrayList<>();
     private static ArrayList<Section> sections = new ArrayList<>();
     private static HashMap<String, Integer> labels = new HashMap<>();
     private static HashMap<String, Integer> dlabels = new HashMap<>();
-    private static HashMap<String, Integer> vars = new HashMap<>();
-    private static HashMap<String, Macro> macros = new HashMap<>();
-    private static HashMap<String, ICodeOp> funcs;
     private static File infile;
     private static File outfile;
 
@@ -29,6 +34,7 @@ public class Assembler {
         outfile = new File("forth.bin");
         startingAddr = 0x0500;
         readFile();
+        macros();
         sections();
         dummyLabels();
         labels();
@@ -64,11 +70,10 @@ public class Assembler {
         r.close();
     }
 
-    private static void sections() {
+    private static void macros() {
         boolean defm = false;
         Macro macro = null;
-        HashMap<String, Section> sectionsMap = new HashMap<>();
-        Section currentSection = null;
+        String mn = null;
         for (int i = 0; i < lines.size(); i++) {
             String s = lines.get(i);
             if (s.isEmpty())
@@ -80,19 +85,30 @@ public class Assembler {
                         exit(1);
                     }
                     String ma = s.substring(7);
-                    String mn = ma;
-                    String args = null;
+                    mn = ma;
+                    ArrayList<String> args = new ArrayList<>();
                     int sep;
                     if ((sep = ma.indexOf(' ')) != -1) {
-                        mn = ma.substring(0, sep);
+                        mn = ma.substring(0, sep).trim();
+                        String[] argslist = ma.substring(sep).trim().split(",");
+                        for (String arg : argslist) {
+                            arg = arg.trim();
+                            int eq;
+                            if ((eq = arg.indexOf('=')) != -1) {
+                                args.add(arg.substring(0, eq).trim());
+                                args.add(arg.substring(eq + 1).trim());
+                            } else {
+                                args.add(arg);
+                                args.add(null);
+                            }
+                        }
                     }
                     if (macros.containsKey(mn)) {
                         System.out.printf("Macro %s already defined!%n", mn);
                         exit(1);
                     }
                     System.out.printf("Macro: %s%n", mn);
-                    macro = new Macro();
-                    macros.put(mn, macro);
+                    macro = new Macro(args.toArray(new String[0]));
                     defm = true;
                 }
                 continue;
@@ -101,8 +117,29 @@ public class Assembler {
                 if (s.equals(".endm")) {
                     defm = false;
                     macro.compile();
+                    macros.put(mn, macro);
                 } else {
                     macro.addInsn(s);
+                }
+            }
+        }
+    }
+
+    private static void sections() {
+        HashMap<String, Section> sectionsMap = new HashMap<>();
+        Section currentSection = null;
+        boolean defm = false;
+        for (int i = 0; i < lines.size(); i++) {
+            String s = lines.get(i);
+            if (s.isEmpty())
+                continue;
+            if (s.startsWith(".macro")) {
+                defm = true;
+                continue;
+            }
+            if (defm) {
+                if (s.equals(".endm")) {
+                    defm = false;
                 }
             } else {
                 if (s.startsWith("section")) {
@@ -115,7 +152,7 @@ public class Assembler {
                             sections.add(currentSection);
                             System.out.printf("Section: %s%n", sn);
                             if (!Arrays.asList(".data", ".text").contains(sn))
-                                System.out.println("Custom sections will be appended after .data and .text sections.");
+                                System.out.println("INFO: Custom sections will be appended after .data and .text sections.");
                         }
                     } else {
                         errorMsg(i, s, 0, "must be followed by an identifier");
@@ -143,53 +180,77 @@ public class Assembler {
                 Map.Entry<Integer, String> entry = iterator.next();
                 int ln = entry.getKey();
                 String line = entry.getValue();
-                int colonPos = line.indexOf(LABEL_MARK);
-                if (colonPos > -1) {
-                    String labelText = line.substring(0, colonPos);
-                    if (!p.matcher(labelText).matches()) {
-                        errorMsg(ln, line, 0, "label name can only contain alphanumerical characters");
-                        exit(1);
-                    }
-                    if (dlabels.containsKey(labelText)) {
-                        errorMsg(ln, line, labelText.indexOf(' '), "duplicate label");
-                        exit(1);
-                    }
-                    dlabels.put(labelText, 0);
-                    line = line.substring(colonPos + 1).trim();
-                }
+                dummyLabels_processLine(ln, line, p);
             }
         }
     }
 
+    private static void dummyLabels_processLine(int ln, String line, Pattern p) {
+        int colonPos = line.indexOf(LABEL_MARK);
+        Instruction insn = Instruction.fromString(line, 0, dlabels);
+        Macro macro = macros.get(insn.id);
+        if (macro != null) {
+            for (String line2 : macro.substitute(insn.arguments)) {
+                dummyLabels_processLine(ln, line2, p);
+            }
+        } else if (colonPos > -1) {
+            String labelText = line.substring(0, colonPos);
+            if (!p.matcher(labelText).matches()) {
+                errorMsg(ln, line, 0, "label name can only contain alphanumerical characters");
+                exit(1);
+            }
+            if (dlabels.containsKey(labelText)) {
+                errorMsg(ln, line, labelText.indexOf(' '), "duplicate label");
+                exit(1);
+            }
+            dlabels.put(labelText, 0);
+            line = line.substring(colonPos + 1).trim();
+        }
+
+    }
+
     private static void labels() {
-        Pattern p = Pattern.compile("^[^0-9,();:.+\\-\\^$]+$");
         int cptr = startingAddr;
+        Pattern p = Pattern.compile("^[^0-9,();:.+\\-\\^$]+$");
         for (Section s : sections) {
             for (Iterator<Map.Entry<Integer, String>> iterator = s.iterator(); iterator.hasNext(); ) {
                 Map.Entry<Integer, String> entry = iterator.next();
                 int ln = entry.getKey();
                 String line = entry.getValue();
-                int colonPos = line.indexOf(LABEL_MARK);
-                if (colonPos > -1) {
-                    String labelText = line.substring(0, colonPos);
-                    if (!p.matcher(labelText).matches()) {
-                        errorMsg(ln, line, 0, "label name can only contain alphanumerical characters");
-                        exit(1);
-                    }
-                    if (labels.containsKey(labelText)) {
-                        errorMsg(ln, line, labelText.indexOf(' '), "duplicate label");
-                        exit(1);
-                    }
-                    System.out.printf("Label: %s [$%04X]%n", labelText, cptr);
-                    labels.put(labelText, cptr);
-                    line = line.substring(colonPos + 1).trim();
-                    s.repl(ln, line);
-                }
-                if (!line.isEmpty()) {
-                    cptr += Instruction.fromString(line, 0, dlabels).getData(0).length;
-                }
+                cptr = labels_processLine(cptr, s, p, ln, line);
             }
         }
+    }
+
+    private static int labels_processLine(int cptr, Section s, Pattern p, int ln, String line) {
+        int colonPos = line.indexOf(LABEL_MARK);
+        if (colonPos > -1) {
+            String labelText = line.substring(0, colonPos);
+            if (!p.matcher(labelText).matches()) {
+                errorMsg(ln, line, 0, "label name can only contain alphanumerical characters");
+                exit(1);
+            }
+            if (labels.containsKey(labelText)) {
+                errorMsg(ln, line, labelText.indexOf(' '), "duplicate label");
+                exit(1);
+            }
+            System.out.printf("Label: %s [$%04X]%n", labelText, cptr);
+            labels.put(labelText, cptr);
+            line = line.substring(colonPos + 1).trim();
+            s.repl(ln, line);
+        }
+        if (!line.isEmpty()) {
+            Instruction insn = Instruction.fromString(line, 0, dlabels);
+            Macro macro = macros.get(insn.id);
+            if (macro != null) {
+                for (String line2 : macro.substitute(insn.arguments)) {
+                    cptr = labels_processLine(cptr, s, p, ln, line2);
+                }
+            } else {
+                cptr += insn.getData(0).length;
+            }
+        }
+        return cptr;
     }
 
     private static ByteBuffer assemble() {
@@ -200,9 +261,19 @@ public class Assembler {
                 Map.Entry<Integer, String> entry = iterator.next();
                 String line = entry.getValue();
                 Instruction insn = Instruction.fromString(line, cptr, labels);
-                byte[] data = insn.getData(cptr);
-                buf.put(data);
-                cptr += data.length;
+                Macro macro = macros.get(insn.id);
+                if (macro != null) {
+                    for (String line2 : macro.substitute(insn.arguments)) {
+                        Instruction insn2 = Instruction.fromString(line2, cptr, labels);
+                        byte[] data = insn2.getData(cptr);
+                        buf.put(data);
+                        cptr += data.length;
+                    }
+                } else {
+                    byte[] data = insn.getData(cptr);
+                    buf.put(data);
+                    cptr += data.length;
+                }
             }
         }
         while (cptr % 0x80 != 0) {
@@ -238,24 +309,25 @@ public class Assembler {
 
     public static int parseInt(String s) {
         String cut = s;
+        int offset = 0;
+        int pos;
+        if ((pos = s.indexOf('+')) != -1) {
+            offset = parseInt(cut.substring(pos + 1));
+            cut = cut.substring(0, pos);
+        }
+        int radix = 10;
         if (s.startsWith("$")) {
             cut = s.substring(1);
-        } else {
-            System.err.printf("Could not parse integer '%s'", s);
-            exit(1);
-        }
-        if (cut.length() != 2 && cut.length() != 4) {
-            System.err.printf("Could not parse integer '%s'", s);
-            exit(1);
+            radix = 16;
         }
         int i = 0;
         try {
-            i = Integer.parseInt(cut, 16);
+            i = Integer.parseInt(cut, radix);
         } catch (Exception e) {
-            System.err.printf("Could not parse integer '%s'", s);
+            System.err.printf("Could not parse integer '%s'%n", s);
             exit(1);
         }
-        return i;
+        return i + offset;
     }
 
     public static String toString(int i, boolean force16b) {
