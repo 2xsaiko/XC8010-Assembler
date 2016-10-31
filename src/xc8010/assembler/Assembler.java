@@ -29,10 +29,7 @@ public class Assembler {
     private static File outfile;
 
     public static void main(String[] args) throws IOException {
-        // setargs(args);
-        infile = new File("forth.asm");
-        outfile = new File("forth.bin");
-        startingAddr = 0x0500;
+        setargs(args);
         readFile();
         macros();
         sections();
@@ -203,10 +200,9 @@ public class Assembler {
                 errorMsg(ln, line, labelText.indexOf(' '), "duplicate label");
                 exit(1);
             }
+            //System.out.printf("Label: %s%n", labelText);
             dlabels.put(labelText, 0);
-            line = line.substring(colonPos + 1).trim();
         }
-
     }
 
     private static void labels() {
@@ -237,7 +233,7 @@ public class Assembler {
             System.out.printf("Label: %s [$%04X]%n", labelText, cptr);
             labels.put(labelText, cptr);
             line = line.substring(colonPos + 1).trim();
-            s.repl(ln, line);
+            // s.repl(ln, line);
         }
         if (!line.isEmpty()) {
             Instruction insn = Instruction.fromString(line, 0, dlabels);
@@ -316,8 +312,8 @@ public class Assembler {
             cut = cut.substring(0, pos);
         }
         int radix = 10;
-        if (s.startsWith("$")) {
-            cut = s.substring(1);
+        if (cut.startsWith("$")) {
+            cut = cut.substring(1);
             radix = 16;
         }
         int i = 0;

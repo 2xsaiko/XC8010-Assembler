@@ -27,25 +27,32 @@ public class Instruction {
         registerOpcode("brk", AddressingMode.IMPLIED, 0x00);
         registerOpcode("nxt", AddressingMode.IMPLIED, 0x02);
         registerOpcode("php", AddressingMode.IMPLIED, 0x08);
+        registerOpcode("rhi", AddressingMode.IMPLIED, 0x0B);
         registerOpcode("clc", AddressingMode.IMPLIED, 0x18);
         registerOpcode("inc", AddressingMode.ACCUMULATOR, 0x1A);
         registerOpcode("jsr", AddressingMode.ABSOLUTE, 0x20);
+        registerOpcode("ent", AddressingMode.ABSOLUTE, 0x22);
         registerOpcode("plp", AddressingMode.IMPLIED, 0x28);
+        registerOpcode("rli", AddressingMode.IMPLIED, 0x2B);
         registerOpcode("nxa", AddressingMode.IMPLIED, 0x42);
         registerOpcode("pha", AddressingMode.IMPLIED, 0x48);
         registerOpcode("rha", AddressingMode.IMPLIED, 0x4B);
         registerOpcode("jmp", AddressingMode.ABSOLUTE, 0x4C);
         registerOpcode("phy", AddressingMode.IMPLIED, 0x5A);
+        registerOpcode("txi", AddressingMode.IMPLIED, 0x5C);
         registerOpcode("rts", AddressingMode.IMPLIED, 0x60);
         registerOpcode("stz", AddressingMode.ZERO_PAGE, 0x64);
         registerOpcode("pla", AddressingMode.IMPLIED, 0x68);
         registerOpcode("adc", AddressingMode.IMMEDIATE, 0x69);
         registerOpcode("stz", AddressingMode.ZERO_PAGE_INDEXED_X, 0x74);
+        registerOpcode("adc", AddressingMode.ABSOLUTE_INDEXED_Y, 0x79);
         registerOpcode("ply", AddressingMode.IMPLIED, 0x7A);
+        registerOpcode("adc", AddressingMode.ABSOLUTE_INDEXED_X, 0x7D);
         registerOpcode("bra", AddressingMode.RELATIVE, 0x80);
         registerOpcode("sty", AddressingMode.ZERO_PAGE, 0x84);
         registerOpcode("sta", AddressingMode.ZERO_PAGE, 0x85);
         registerOpcode("dey", AddressingMode.IMPLIED, 0x88);
+        registerOpcode("txa", AddressingMode.IMPLIED, 0x8A);
         registerOpcode("txr", AddressingMode.IMPLIED, 0x8B);
         registerOpcode("sty", AddressingMode.ABSOLUTE, 0x8C);
         registerOpcode("sta", AddressingMode.ABSOLUTE, 0x8D);
@@ -53,6 +60,7 @@ public class Instruction {
         registerOpcode("sta", AddressingMode.INDIRECT_ABSOLUTE, 0x92);
         registerOpcode("sty", AddressingMode.ZERO_PAGE_INDEXED_X, 0x94);
         registerOpcode("sta", AddressingMode.ZERO_PAGE_INDEXED_X, 0x95);
+        registerOpcode("tya", AddressingMode.IMPLIED, 0x98);
         registerOpcode("sta", AddressingMode.ABSOLUTE_INDEXED_Y, 0x99);
         registerOpcode("txs", AddressingMode.IMPLIED, 0x9A);
         registerOpcode("stz", AddressingMode.ABSOLUTE, 0x9C);
@@ -61,11 +69,15 @@ public class Instruction {
         registerOpcode("ldx", AddressingMode.IMMEDIATE, 0xA2);
         registerOpcode("ldx", AddressingMode.IMMEDIATEB, 0xA2);
         registerOpcode("lda", AddressingMode.ZERO_PAGE, 0xA5);
+        registerOpcode("tay", AddressingMode.IMPLIED, 0xA8);
         registerOpcode("lda", AddressingMode.IMMEDIATE, 0xA9);
         registerOpcode("lda", AddressingMode.IMMEDIATEB, 0xA9);
+        registerOpcode("tax", AddressingMode.IMPLIED, 0xAA);
+        registerOpcode("trx", AddressingMode.IMPLIED, 0xAB);
         registerOpcode("lda", AddressingMode.ABSOLUTE, 0xAD);
         registerOpcode("lda", AddressingMode.INDIRECT_INDEXED, 0xB1);
         registerOpcode("lda", AddressingMode.ABSOLUTE_INDEXED_Y, 0xB9);
+        registerOpcode("tsx", AddressingMode.IMPLIED, 0xBA);
         registerOpcode("ldx", AddressingMode.ABSOLUTE_INDEXED_Y, 0xBE);
         registerOpcode("cpy", AddressingMode.IMMEDIATE, 0xC0);
         registerOpcode("cpy", AddressingMode.IMMEDIATEB, 0xC0);
@@ -76,12 +88,15 @@ public class Instruction {
         registerOpcode("dex", AddressingMode.IMPLIED, 0xCA);
         registerOpcode("wai", AddressingMode.IMPLIED, 0xCB);
         registerOpcode("bne", AddressingMode.RELATIVE, 0xD0);
+        registerOpcode("phx", AddressingMode.IMPLIED, 0xDA);
         registerOpcode("stp", AddressingMode.IMPLIED, 0xDB);
+        registerOpcode("tix", AddressingMode.IMPLIED, 0xDC);
         registerOpcode("sep", AddressingMode.IMMEDIATEB, 0xE2);
         registerOpcode("inc", AddressingMode.ZERO_PAGE, 0xE6);
         registerOpcode("inc", AddressingMode.ABSOLUTE, 0xEE);
         registerOpcode("mmu", AddressingMode.ZERO_PAGE, 0xEF);
         registerOpcode("beq", AddressingMode.RELATIVE, 0xF0);
+        registerOpcode("plx", AddressingMode.IMPLIED, 0xFA);
         registerOpcode("xce", AddressingMode.IMPLIED, 0xFB);
 
         serializers = new HashMap<>();
@@ -109,6 +124,11 @@ public class Instruction {
         });
         serializers.put(AddressingMode.INDIRECT_ABSOLUTE, (insn, cptr, list) -> {
             int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
+            list.add((byte) (val & 0xFF));
+            list.add((byte) (val >> 8));
+        });
+        serializers.put(AddressingMode.ABSOLUTE_INDEXED_X, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0]);
             list.add((byte) (val & 0xFF));
             list.add((byte) (val >> 8));
         });
@@ -178,10 +198,10 @@ public class Instruction {
             if (!sortedVarList.isEmpty())
                 for (int i = 0; i < arguments.length; i++) {
                     if (i == 0 && ".set".equals(id)) continue;
+                    if ("db".equals(id) && arguments[i].startsWith("'") && arguments[i].endsWith("'")) continue;
                     Macro macro = Assembler.macros.get(id);
                     if (macro != null) {
-                        if (macro.noReplace[i])
-                            continue;
+                        if (macro.noReplace[i]) continue;
                     }
                     String arg = arguments[i];
                     int ind = Integer.MAX_VALUE;
@@ -245,6 +265,8 @@ public class Instruction {
     }
 
     public byte[] getData(int cptr) {
+        if (id.isEmpty())
+            return new byte[0];
         ArrayList<Byte> data = new ArrayList<>(4);
         if (i("db")) {
             for (String arg : arguments) {

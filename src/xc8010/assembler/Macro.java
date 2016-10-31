@@ -20,7 +20,7 @@ public class Macro {
             System.out.println("Macro definition param array must be a multiple of 2");
             exit(1);
         }
-        noReplace = new boolean[defs.length];
+        noReplace = new boolean[defs.length / 2];
         margs = new HashMap<>();
         argsi = new ArrayList<>();
         insnList = new ArrayList<>();
@@ -28,7 +28,7 @@ public class Macro {
             String name = defs[i];
             if (name.startsWith("[") && name.endsWith("]")) {
                 name = name.substring(1, name.length() - 1);
-                noReplace[i] = true;
+                noReplace[i / 2] = true;
             }
             String defval = defs[i + 1];
             margs.put(name, defval);
@@ -58,13 +58,16 @@ public class Macro {
             for (Entry<String, String> e : vals.entrySet()) {
                 s = s.replace("${" + e.getKey() + "}", e.getValue());
             }
+            boolean flag = true;
             for (Entry<String, Macro> entry : Assembler.macros.entrySet()) {
                 Instruction i = Instruction.fromString(s);
                 if (entry.getKey().equals(i.id)) {
                     list.addAll(entry.getValue().substitute(i.arguments));
+                    flag = false;
+                    break;
                 }
             }
-            list.add(s);
+            if (flag) list.add(s);
         }
         return list;
     }
