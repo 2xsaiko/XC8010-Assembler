@@ -298,7 +298,7 @@ public class Assembler {
         while (s.length() < index)
             s += " ";
         s += "^";
-        System.err.printf("%s%n%s%n%s%nat line %s%n", line, s, errorMsg, lineNo + 1);
+        System.err.printf("%n%s%n%s%n%s%nat line %s%n", line, s, errorMsg, lineNo + 1);
     }
 
     public static byte[] stringBytes(String s) {

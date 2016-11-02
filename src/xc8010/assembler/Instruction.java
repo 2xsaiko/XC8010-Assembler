@@ -38,6 +38,7 @@ public class Instruction {
         registerOpcode("and", AddressingMode.STACK_RELATIVE, 0x23);
         registerOpcode("and", AddressingMode.RETURN_STACK_RELATIVE, 0x27);
         registerOpcode("plp", AddressingMode.IMPLIED, 0x28);
+        registerOpcode("rol", AddressingMode.ACCUMULATOR, 0x2A);
         registerOpcode("rli", AddressingMode.IMPLIED, 0x2B);
         registerOpcode("sec", AddressingMode.IMPLIED, 0x38);
         registerOpcode("dec", AddressingMode.ACCUMULATOR, 0x3A);
@@ -61,6 +62,7 @@ public class Instruction {
         registerOpcode("pla", AddressingMode.IMPLIED, 0x68);
         registerOpcode("adc", AddressingMode.IMMEDIATE, 0x69);
         registerOpcode("adc", AddressingMode.IMMEDIATEB, 0x69);
+        registerOpcode("ror", AddressingMode.ACCUMULATOR, 0x6A);
         registerOpcode("rla", AddressingMode.IMPLIED, 0x6B);
         registerOpcode("stz", AddressingMode.ZERO_PAGE_INDEXED_X, 0x74);
         registerOpcode("adc", AddressingMode.ABSOLUTE_INDEXED_Y, 0x79);
@@ -76,6 +78,7 @@ public class Instruction {
         registerOpcode("txr", AddressingMode.IMPLIED, 0x8B);
         registerOpcode("sty", AddressingMode.ABSOLUTE, 0x8C);
         registerOpcode("sta", AddressingMode.ABSOLUTE, 0x8D);
+        registerOpcode("bcc", AddressingMode.RELATIVE, 0x90);
         registerOpcode("sta", AddressingMode.INDIRECT_INDEXED, 0x91);
         registerOpcode("sta", AddressingMode.INDIRECT_ABSOLUTE, 0x92);
         registerOpcode("sta", AddressingMode.INDIRECT_STACK_RELATIVE, 0x93);
