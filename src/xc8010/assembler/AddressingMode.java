@@ -15,6 +15,10 @@ public enum AddressingMode {
     ZERO_PAGE_INDEXED_Y(2, "^\\$[0-9A-Fa-f]{2}$", "^[Yy]$"),
     INDEXED_INDIRECT(2, "^\\(\\$[0-9A-Fa-f]{4}\\)$", "^[Xx]$"),
     INDIRECT_INDEXED(2, "^\\(\\$[0-9A-Fa-f]{4}\\)$", "^[Yy]$"),
+    STACK_RELATIVE(2, "^\\$[0-9A-Fa-f]{2}$", "^[Ss]$"),
+    RETURN_STACK_RELATIVE(2, "^\\$[0-9A-Fa-f]{2}$", "^[Rr]$"),
+    INDIRECT_STACK_RELATIVE(3, "^\\(\\$[0-9A-Fa-f]{2}$", "^[Ss]\\)$", "^[Yy]$"),
+    INDIRECT_RETURN_STACK_RELATIVE(3, "^\\(\\$[0-9A-Fa-f]{2}$", "^[Rr]\\)$", "^[Yy]$"),
     ACCUMULATOR(1, "^[Aa]$"),
     RELATIVE(1),
     UNKNOWN;

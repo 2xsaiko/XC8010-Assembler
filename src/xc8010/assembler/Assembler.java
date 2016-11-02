@@ -172,6 +172,7 @@ public class Assembler {
 
     private static void dummyLabels() {
         Pattern p = Pattern.compile("^[^0-9,\\(\\);:.$]+$");
+        System.out.print("Labels:");
         for (Section s : sections) {
             for (Iterator<Map.Entry<Integer, String>> iterator = s.iterator(); iterator.hasNext(); ) {
                 Map.Entry<Integer, String> entry = iterator.next();
@@ -180,6 +181,7 @@ public class Assembler {
                 dummyLabels_processLine(ln, line, p);
             }
         }
+        System.out.println();
     }
 
     private static void dummyLabels_processLine(int ln, String line, Pattern p) {
@@ -200,7 +202,7 @@ public class Assembler {
                 errorMsg(ln, line, labelText.indexOf(' '), "duplicate label");
                 exit(1);
             }
-            //System.out.printf("Label: %s%n", labelText);
+            System.out.printf(" %s", labelText);
             dlabels.put(labelText, 0);
         }
     }
