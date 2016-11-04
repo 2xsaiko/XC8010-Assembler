@@ -40,6 +40,7 @@ public class Instruction {
         registerOpcode("plp", AddressingMode.IMPLIED, 0x28);
         registerOpcode("rol", AddressingMode.ACCUMULATOR, 0x2A);
         registerOpcode("rli", AddressingMode.IMPLIED, 0x2B);
+        registerOpcode("bmi", AddressingMode.RELATIVE, 0x30);
         registerOpcode("sec", AddressingMode.IMPLIED, 0x38);
         registerOpcode("dec", AddressingMode.ACCUMULATOR, 0x3A);
         registerOpcode("mul", AddressingMode.ABSOLUTE_INDEXED_X, 0x3F);
@@ -243,11 +244,26 @@ public class Instruction {
             ArrayList<String> args = new ArrayList<>();
             id = t.substring(0, end);
             t = t.substring(end + 1).trim();
-            while ((end = t.indexOf(',')) != -1) {
-                args.add(t.substring(0, end).trim());
-                t = t.substring(end + 1).trim();
+            String crt = "";
+            boolean literal = false;
+            for (char c : t.toCharArray()) {
+                if (c == '\\') {
+                    literal = true;
+                    continue;
+                }
+                if (literal) {
+                    literal = false;
+                    crt += c;
+                    continue;
+                }
+                if (c == ',') {
+                    args.add(crt.trim());
+                    crt = "";
+                    continue;
+                }
+                crt += c;
             }
-            args.add(t.trim());
+            args.add(crt.trim());
             arguments = new String[args.size()];
             args.toArray(arguments);
             if (!sortedVarList.isEmpty())

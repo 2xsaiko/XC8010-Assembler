@@ -75,7 +75,7 @@ public class Macro {
     private String getValue(int i, String[] args) {
         String s = margs.get(argsi.get(i));
         if (!args[i].isEmpty()) {
-            s = args[i];
+            s = args[i].replace(",", "\\,");
         } else if (s.startsWith("${") && s.endsWith("}")) {
             String varname = s.substring(2, s.length() - 1);
             int index = -1;

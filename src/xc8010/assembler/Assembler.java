@@ -195,7 +195,7 @@ public class Assembler {
         } else if (colonPos > -1) {
             String labelText = line.substring(0, colonPos);
             if (!p.matcher(labelText).matches()) {
-                errorMsg(ln, line, 0, "label name can only contain alphanumerical characters");
+                errorMsg(ln, line, 0, "label name can not contain the following characters: 0123456789,();:.$");
                 exit(1);
             }
             if (dlabels.containsKey(labelText)) {
