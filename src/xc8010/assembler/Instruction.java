@@ -68,6 +68,7 @@ public class Instruction {
         registerOpcode("stz", AddressingMode.ZERO_PAGE_INDEXED_X, 0x74);
         registerOpcode("adc", AddressingMode.ABSOLUTE_INDEXED_Y, 0x79);
         registerOpcode("ply", AddressingMode.IMPLIED, 0x7A);
+        registerOpcode("jmp", AddressingMode.INDEXED_INDIRECT, 0x7C);
         registerOpcode("adc", AddressingMode.ABSOLUTE_INDEXED_X, 0x7D);
         registerOpcode("div", AddressingMode.ABSOLUTE_INDEXED_X, 0x7F);
         registerOpcode("bra", AddressingMode.RELATIVE, 0x80);
@@ -182,6 +183,11 @@ public class Instruction {
             val -= cptr + list.size() + 1;
             list.add((byte) val);
         });
+        serializers.put(AddressingMode.INDEXED_INDIRECT, (insn, cptr, list) -> {
+            int val = Assembler.parseInt(insn.arguments[0].substring(1));
+            list.add((byte) (val & 0xFF));
+            list.add((byte) (val >> 8));
+        });
         serializers.put(AddressingMode.INDIRECT_INDEXED, (insn, cptr, list) -> {
             int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
             list.add((byte) (val & 0xFF));
@@ -234,6 +240,7 @@ public class Instruction {
 
         // strip out labels
         int end = t.indexOf(':');
+        if (end > 1 && t.charAt(end - 1) == '\\') end = -1;
         t = t.substring(end + 1).trim();
 
         end = t.indexOf(' ');
@@ -266,11 +273,11 @@ public class Instruction {
             args.add(crt.trim());
             arguments = new String[args.size()];
             args.toArray(arguments);
+            Macro macro = Assembler.macros.get(id);
             if (!sortedVarList.isEmpty())
                 for (int i = 0; i < arguments.length; i++) {
                     if (i == 0 && ".set".equals(id)) continue;
                     if ("db".equals(id) && arguments[i].startsWith("'") && arguments[i].endsWith("'")) continue;
-                    Macro macro = Assembler.macros.get(id);
                     if (macro != null) {
                         if (macro.noReplace[i]) continue;
                     }

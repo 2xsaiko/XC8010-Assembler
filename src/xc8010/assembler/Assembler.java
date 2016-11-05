@@ -58,6 +58,7 @@ public class Assembler {
         String line;
         while ((line = r.readLine()) != null) {
             int i = line.indexOf(COMMENT_BEGIN);
+            if (i > 1 && line.charAt(i - 1) == '\\') i = -1;
             if (i != -1) {
                 line = line.substring(0, i);
             }
@@ -186,6 +187,7 @@ public class Assembler {
 
     private static void dummyLabels_processLine(int ln, String line, Pattern p) {
         int colonPos = line.indexOf(LABEL_MARK);
+        if (colonPos > 1 && line.charAt(colonPos - 1) == '\\') colonPos = -1;
         Instruction insn = Instruction.fromString(line, 0, dlabels);
         Macro macro = macros.get(insn.id);
         if (macro != null) {
@@ -195,6 +197,7 @@ public class Assembler {
         } else if (colonPos > -1) {
             String labelText = line.substring(0, colonPos);
             if (!p.matcher(labelText).matches()) {
+                System.out.println(line);
                 errorMsg(ln, line, 0, "label name can not contain the following characters: 0123456789,();:.$");
                 exit(1);
             }
@@ -222,6 +225,7 @@ public class Assembler {
 
     private static int labels_processLine(int cptr, Section s, Pattern p, int ln, String line) {
         int colonPos = line.indexOf(LABEL_MARK);
+        if (colonPos > 1 && line.charAt(colonPos - 1) == '\\') colonPos = -1;
         if (colonPos > -1) {
             String labelText = line.substring(0, colonPos);
             if (!p.matcher(labelText).matches()) {
