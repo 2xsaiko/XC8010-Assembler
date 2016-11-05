@@ -254,13 +254,12 @@ public class Instruction {
             String crt = "";
             boolean literal = false;
             for (char c : t.toCharArray()) {
-                if (c == '\\') {
-                    literal = true;
-                    continue;
-                }
                 if (literal) {
                     literal = false;
                     crt += c;
+                    continue;
+                } else if (c == '\\') {
+                    literal = true;
                     continue;
                 }
                 if (c == ',') {

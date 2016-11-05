@@ -75,11 +75,11 @@ public class Macro {
     private String getValue(int i, String[] args) {
         String s = margs.get(argsi.get(i));
         if (!args[i].isEmpty()) {
-            s = args[i].replace(",", "\\,").replace(":", "\\:").replace(";", "\\;");
+            s = args[i].replace("\\", "\\\\").replace(",", "\\,").replace(":", "\\:").replace(";", "\\;");
         } else if (s.startsWith("${") && s.endsWith("}")) {
             String varname = s.substring(2, s.length() - 1);
             int index = -1;
-            for (int topkek = 0; i < argsi.size(); i++) {
+            for (int topkek = 0; topkek < argsi.size(); topkek++) {
                 String varn = argsi.get(topkek);
                 if (varn.equals(varname)) {
                     index = topkek;
