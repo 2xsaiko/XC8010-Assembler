@@ -34,6 +34,7 @@ public class Instruction {
         registerOpcode("inc", AddressingMode.ACCUMULATOR, 0x1A);
         registerOpcode("rhx", AddressingMode.IMPLIED, 0x1B);
         registerOpcode("jsr", AddressingMode.ABSOLUTE, 0x20);
+        registerOpcode("ent", AddressingMode.IMPLIED, 0x22);
         registerOpcode("ent", AddressingMode.ABSOLUTE, 0x22);
         registerOpcode("and", AddressingMode.STACK_RELATIVE, 0x23);
         registerOpcode("and", AddressingMode.RETURN_STACK_RELATIVE, 0x27);
@@ -105,6 +106,7 @@ public class Instruction {
         registerOpcode("tax", AddressingMode.IMPLIED, 0xAA);
         registerOpcode("trx", AddressingMode.IMPLIED, 0xAB);
         registerOpcode("lda", AddressingMode.ABSOLUTE, 0xAD);
+        registerOpcode("ldx", AddressingMode.ABSOLUTE, 0xAE);
         registerOpcode("bcs", AddressingMode.RELATIVE, 0xB0);
         registerOpcode("lda", AddressingMode.INDIRECT_INDEXED, 0xB1);
         registerOpcode("lda", AddressingMode.INDIRECT_STACK_RELATIVE, 0xB3);
