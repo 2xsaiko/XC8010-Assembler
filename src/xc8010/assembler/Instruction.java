@@ -69,6 +69,7 @@ public class Instruction {
         registerOpcode("stz", AddressingMode.ZERO_PAGE_INDEXED_X, 0x74);
         registerOpcode("adc", AddressingMode.ABSOLUTE_INDEXED_Y, 0x79);
         registerOpcode("ply", AddressingMode.IMPLIED, 0x7A);
+        registerOpcode("rly", AddressingMode.IMPLIED, 0x7B);
         registerOpcode("jmp", AddressingMode.INDEXED_INDIRECT, 0x7C);
         registerOpcode("adc", AddressingMode.ABSOLUTE_INDEXED_X, 0x7D);
         registerOpcode("div", AddressingMode.ABSOLUTE_INDEXED_X, 0x7F);
