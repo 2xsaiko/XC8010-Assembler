@@ -182,6 +182,7 @@ public class Instruction {
         registerOpcode("sbc", AddressingMode.STACK_RELATIVE, 0xE3);
         registerOpcode("inc", AddressingMode.ZERO_PAGE, 0xE6);
         registerOpcode("sbc", AddressingMode.RETURN_STACK_RELATIVE, 0xE7);
+        registerOpcode("xba", AddressingMode.IMPLIED, 0xEB);
         registerOpcode("inc", AddressingMode.ABSOLUTE, 0xEE);
         registerOpcode("mmu", AddressingMode.ZERO_PAGE, 0xEF);
         registerOpcode("beq", AddressingMode.RELATIVE, 0xF0);
