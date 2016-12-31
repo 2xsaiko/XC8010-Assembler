@@ -128,6 +128,7 @@ public class Instruction {
         registerOpcode("sty", AddressingMode.ABSOLUTE, 0x8C);
         registerOpcode("sta", AddressingMode.ABSOLUTE, 0x8D);
         registerOpcode("stx", AddressingMode.ABSOLUTE, 0x8E);
+        registerOpcode("zea", AddressingMode.IMPLIED, 0x8F);
         registerOpcode("bcc", AddressingMode.RELATIVE, 0x90);
         registerOpcode("sta", AddressingMode.INDIRECT_INDEXED, 0x91);
         registerOpcode("sta", AddressingMode.INDIRECT_ABSOLUTE, 0x92);
@@ -140,6 +141,7 @@ public class Instruction {
         registerOpcode("stz", AddressingMode.ABSOLUTE, 0x9C);
         registerOpcode("sta", AddressingMode.ABSOLUTE_INDEXED_X, 0x9D);
         registerOpcode("stz", AddressingMode.ABSOLUTE_INDEXED_X, 0x9E);
+        registerOpcode("sea", AddressingMode.IMPLIED, 0x9F);
         registerOpcode("ldy", AddressingMode.IMMEDIATE, 0xA0);
         registerOpcode("ldy", AddressingMode.IMMEDIATEB, 0xA0);
         registerOpcode("ldx", AddressingMode.IMMEDIATE, 0xA2);
@@ -171,6 +173,7 @@ public class Instruction {
         registerOpcode("cmp", AddressingMode.IMMEDIATEB, 0xC9);
         registerOpcode("dex", AddressingMode.IMPLIED, 0xCA);
         registerOpcode("wai", AddressingMode.IMPLIED, 0xCB);
+        registerOpcode("pld", AddressingMode.IMPLIED, 0xCF);
         registerOpcode("bne", AddressingMode.RELATIVE, 0xD0);
         registerOpcode("phx", AddressingMode.IMPLIED, 0xDA);
         registerOpcode("stp", AddressingMode.IMPLIED, 0xDB);
