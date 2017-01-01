@@ -27,10 +27,13 @@ public class Assembler {
     private static HashMap<String, Integer> dlabels = new HashMap<>();
     private static File infile;
     private static File outfile;
+    private static Set<String> cflags = new HashSet<>();
 
     public static void main(String[] args) throws IOException {
         setargs(args);
-        readFile();
+        lines.add(".include " + infile.getName());
+        while (processIncludes()) ;
+        processConditions();
         macros();
         sections();
         dummyLabels();
@@ -41,31 +44,81 @@ public class Assembler {
 
     private static void setargs(String[] args) {
         if (args.length < 2) {
-            System.out.println("Syntax: <input> <output> [starting-address]");
+            System.out.println("Syntax: <input> <output> [starting-address] [-Cflag...]");
             System.out.println("                         [ Default: $0400 ]");
             exit(1);
         }
         infile = new File(args[0]);
         outfile = new File(args[1]);
         startingAddr = 0x0400;
+        int i = 2;
         if (args.length > 2) {
             startingAddr = parseInt(args[2]);
+            i = 3;
+        }
+        for (; i < args.length; i++) {
+            String s = args[i];
+            if (s.startsWith("-C")) {
+                cflags.add(s.substring(2));
+            }
         }
     }
 
-    private static void readFile() throws IOException {
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(infile)));
-        String line;
-        while ((line = r.readLine()) != null) {
-            int i = line.indexOf(COMMENT_BEGIN);
-            if (i > 1 && line.charAt(i - 1) == '\\') i = -1;
-            if (i != -1) {
-                line = line.substring(0, i);
+    private static boolean processIncludes() throws IOException {
+        boolean ret = false;
+        for (int i = 0; i < lines.size(); i++) {
+            String s = lines.get(i);
+            if (s.startsWith(".include")) {
+                lines.remove(i);
+                String f = s.substring(s.indexOf(" ") + 1);
+                File file = new File(infile.getParent(), f);
+                ret = true;
+                BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                String line;
+                int k = i;
+                while ((line = r.readLine()) != null) {
+                    int j = line.indexOf(COMMENT_BEGIN);
+                    if (j > 1 && line.charAt(j - 1) == '\\') j = -1;
+                    if (j != -1) {
+                        line = line.substring(0, j);
+                    }
+                    line = line.trim();
+                    lines.add(i++, line);
+                }
+                i = k;
+                r.close();
+                i--;
             }
-            line = line.trim();
-            lines.add(line);
         }
-        r.close();
+        return ret;
+    }
+
+    private static void processConditions() {
+        boolean removing = false;
+        boolean flagen = false;
+        for (int i = 0; i < lines.size(); i++) {
+            String s = lines.get(i);
+            if (s.isEmpty()) continue;
+            if (removing) {
+                if (s.startsWith(".endif")) {
+                    removing = false;
+                    lines.remove(i--);
+                }
+                if (!flagen) lines.remove(i--);
+            } else {
+                if (s.startsWith(".ifcflag")) {
+                    String flag = s.substring(s.indexOf(" ") + 1);
+                    removing = true;
+                    flagen = cflags.contains(flag);
+                    lines.remove(i--);
+                } else if (s.startsWith(".ifncflag")) {
+                    String flag = s.substring(s.indexOf(" ") + 1);
+                    removing = true;
+                    flagen = !cflags.contains(flag);
+                    lines.remove(i--);
+                }
+            }
+        }
     }
 
     private static void macros() {
@@ -74,8 +127,7 @@ public class Assembler {
         String mn = null;
         for (int i = 0; i < lines.size(); i++) {
             String s = lines.get(i);
-            if (s.isEmpty())
-                continue;
+            if (s.isEmpty()) continue;
             if (s.startsWith(".macro")) {
                 if (s.length() > 7) {
                     if (defm) {
