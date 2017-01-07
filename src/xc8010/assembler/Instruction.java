@@ -97,6 +97,7 @@ public class Instruction {
         registerOpcode("eor", AddressingMode.IMMEDIATEB, 0x49);
         registerOpcode("rha", AddressingMode.IMPLIED, 0x4B);
         registerOpcode("jmp", AddressingMode.ABSOLUTE, 0x4C);
+        registerOpcode("bvc", AddressingMode.RELATIVE, 0x50);
         registerOpcode("phy", AddressingMode.IMPLIED, 0x5A);
         registerOpcode("rhy", AddressingMode.IMPLIED, 0x5B);
         registerOpcode("txi", AddressingMode.IMPLIED, 0x5C);
@@ -108,6 +109,7 @@ public class Instruction {
         registerOpcode("pla", AddressingMode.IMPLIED, 0x68);
         registerOpcode("adc", AddressingMode.IMMEDIATE, 0x69);
         registerOpcode("adc", AddressingMode.IMMEDIATEB, 0x69);
+        registerOpcode("bvs", AddressingMode.RELATIVE, 0x70);
         registerOpcode("ror", AddressingMode.ACCUMULATOR, 0x6A);
         registerOpcode("rla", AddressingMode.IMPLIED, 0x6B);
         registerOpcode("adc", AddressingMode.ABSOLUTE, 0x6D);
