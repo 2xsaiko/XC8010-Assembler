@@ -103,8 +103,7 @@ public class Assembler {
                 if (s.startsWith(".endif")) {
                     removing = false;
                     lines.remove(i--);
-                }
-                if (!flagen) lines.remove(i--);
+                } else if (!flagen) lines.remove(i--);
             } else {
                 if (s.startsWith(".ifcflag")) {
                     String flag = s.substring(s.indexOf(" ") + 1);

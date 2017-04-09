@@ -91,6 +91,7 @@ public class Instruction {
         registerOpcode("mul", AddressingMode.ABSOLUTE_INDEXED_X, 0x3F);
         registerOpcode("nxa", AddressingMode.IMPLIED, 0x42);
         registerOpcode("eor", AddressingMode.STACK_RELATIVE, 0x43);
+        registerOpcode("eor", AddressingMode.ZERO_PAGE, 0x45);
         registerOpcode("eor", AddressingMode.RETURN_STACK_RELATIVE, 0x47);
         registerOpcode("pha", AddressingMode.IMPLIED, 0x48);
         registerOpcode("eor", AddressingMode.IMMEDIATE, 0x49);
@@ -125,6 +126,7 @@ public class Instruction {
         registerOpcode("sta", AddressingMode.ZERO_PAGE, 0x85);
         registerOpcode("stx", AddressingMode.ZERO_PAGE, 0x86);
         registerOpcode("dey", AddressingMode.IMPLIED, 0x88);
+        registerOpcode("bit", AddressingMode.IMMEDIATE, 0x89);
         registerOpcode("txa", AddressingMode.IMPLIED, 0x8A);
         registerOpcode("txr", AddressingMode.IMPLIED, 0x8B);
         registerOpcode("sty", AddressingMode.ABSOLUTE, 0x8C);
@@ -169,6 +171,7 @@ public class Instruction {
         registerOpcode("cpy", AddressingMode.IMMEDIATEB, 0xC0);
         registerOpcode("rep", AddressingMode.IMMEDIATEB, 0xC2);
         registerOpcode("cmp", AddressingMode.STACK_RELATIVE, 0xC3);
+        registerOpcode("dec", AddressingMode.ZERO_PAGE, 0xC6);
         registerOpcode("cmp", AddressingMode.RETURN_STACK_RELATIVE, 0xC7);
         registerOpcode("iny", AddressingMode.IMPLIED, 0xC8);
         registerOpcode("cmp", AddressingMode.IMMEDIATE, 0xC9);
