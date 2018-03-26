@@ -245,7 +245,7 @@ public class Instruction {
             list.add((byte) (val & 0xFF));
         });
         serializers.put(AddressingMode.INDIRECT_INDEXED, (insn, cptr, list) -> {
-            int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
+            int val = Assembler.parseInt(insn.arguments[0].substring(1, 4));
             list.add((byte) (val & 0xFF));
         });
         serializers.put(AddressingMode.STACK_RELATIVE, (insn, cptr, list) -> {
