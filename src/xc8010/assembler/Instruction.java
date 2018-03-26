@@ -222,9 +222,8 @@ public class Instruction {
             list.add((byte) (val >> 8));
         });
         serializers.put(AddressingMode.INDIRECT_ABSOLUTE, (insn, cptr, list) -> {
-            int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
+            int val = Assembler.parseInt(insn.arguments[0].substring(1, 4));
             list.add((byte) (val & 0xFF));
-            list.add((byte) (val >> 8));
         });
         serializers.put(AddressingMode.ABSOLUTE_INDEXED_X, (insn, cptr, list) -> {
             int val = Assembler.parseInt(insn.arguments[0]);
@@ -244,12 +243,10 @@ public class Instruction {
         serializers.put(AddressingMode.INDEXED_INDIRECT, (insn, cptr, list) -> {
             int val = Assembler.parseInt(insn.arguments[0].substring(1));
             list.add((byte) (val & 0xFF));
-            list.add((byte) (val >> 8));
         });
         serializers.put(AddressingMode.INDIRECT_INDEXED, (insn, cptr, list) -> {
             int val = Assembler.parseInt(insn.arguments[0].substring(1, 6));
             list.add((byte) (val & 0xFF));
-            list.add((byte) (val >> 8));
         });
         serializers.put(AddressingMode.STACK_RELATIVE, (insn, cptr, list) -> {
             int val = Assembler.parseInt(insn.arguments[0]);
